@@ -3,6 +3,8 @@ import '../services/dummy_loader.dart';
 import '../widgets/severity_tile.dart';
 
 class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final data = DummyLoader.load();
