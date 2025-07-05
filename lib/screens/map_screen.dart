@@ -10,11 +10,24 @@ class MapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = DummyLoader.load();
 
+    // If no data is available, show a message instead of crashing
+    if (data.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text("Map View")),
+        body: Center(
+          child: Text(
+            "No distress data available.",
+            style: TextStyle(fontSize: 16, color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: Text("Map View")),
       body: FlutterMap(
         options: MapOptions(
-          center: data[0].location,
+          center: data[0].location, // Safe now because data is not empty
           zoom: 14.0,
         ),
         children: [
@@ -31,7 +44,7 @@ class MapScreen extends StatelessWidget {
                 builder: (ctx) => Icon(
                   Icons.circle,
                   color: getColorFromSeverity(d.severityScore),
-                  size: 12,
+                  size: 16, // Slightly larger for visibility
                 ),
               )).toList(),
             ),
