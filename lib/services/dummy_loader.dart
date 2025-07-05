@@ -5,7 +5,7 @@ class DummyLoader {
   static List<DistressData> load() {
     return [
       DistressData(
-        roughness: 1800,
+        roughness: 2000,
         rutting: 4.5,
         cracking: 0.3,
         location: LatLng(26.3456, 76.2487),

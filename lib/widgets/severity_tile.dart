@@ -4,7 +4,7 @@ import '../utils/severity_colors.dart';
 
 class SeverityTile extends StatelessWidget {
   final DistressData data;
-  const SeverityTile(this.data);
+  const SeverityTile(this.data, {super.key});
 
   @override
   Widget build(BuildContext context) {
