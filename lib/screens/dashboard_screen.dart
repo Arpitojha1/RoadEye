@@ -1,19 +1,46 @@
 import 'package:flutter/material.dart';
-import '../services/dummy_loader.dart';
-import '../widgets/severity_tile.dart';
+import '../services/shared_data.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final data = DummyLoader.load();
+    final data = SharedData.parsedRoadData;
+
+    if (data == null || data.isEmpty) {
+      return Center(
+        child: Text(
+          'No data uploaded yet.\nPlease upload a valid NSV Excel file.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Distress Dashboard")),
+      appBar: AppBar(title: Text("Pavement Condition Dashboard")),
       body: ListView.builder(
         itemCount: data.length,
-        itemBuilder: (_, index) => SeverityTile(data[index]),
+        itemBuilder: (context, index) {
+          final segment = data[index];
+
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            elevation: 4,
+            child: ListTile(
+              title: Text(
+                "Chainage: ${segment['startChainage']} - ${segment['endChainage']}",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                "Cracking: ${segment['cracking']}%  |  "
+                "Rutting: ${segment['rutting']} mm  |  "
+                "Roughness: ${segment['roughness']} IRI",
+              ),
+            ),
+          );
+        },
       ),
     );
   }

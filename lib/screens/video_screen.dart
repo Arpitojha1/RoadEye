@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../services/shared_data.dart';
 
 class VideoScreen extends StatefulWidget {
   @override
@@ -8,15 +10,25 @@ class VideoScreen extends StatefulWidget {
 
 class _VideoScreenState extends State<VideoScreen> {
   late VideoPlayerController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/videos/nsv_sample.mp4')
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();  // Auto-play
+
+    // Select video source: uploaded or fallback asset
+    if (SharedData.videoFilePath != null) {
+      _controller = VideoPlayerController.file(File(SharedData.videoFilePath!));
+    } else {
+      _controller = VideoPlayerController.asset('assets/videos/nsv_sample.mp4');
+    }
+
+    _controller.initialize().then((_) {
+      setState(() {
+        _isInitialized = true;
       });
+      _controller.play(); // Autoplay
+    });
   }
 
   @override
@@ -30,38 +42,42 @@ class _VideoScreenState extends State<VideoScreen> {
     return Scaffold(
       appBar: AppBar(title: Text("NSV Video Playback")),
       body: Center(
-  child: _controller.value.isInitialized
-      ? SingleChildScrollView( // ✅ Wrap to prevent overflow
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              ),
-              SizedBox(height: 10),
-              VideoProgressIndicator(_controller, allowScrubbing: true),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(_controller.value.isPlaying ? Icons.pause : Icons.play_arrow),
-                    onPressed: () {
-                      setState(() {
-                        _controller.value.isPlaying
-                            ? _controller.pause()
-                            : _controller.play();
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        )
-      : CircularProgressIndicator(),
-        ),
+        child: _isInitialized
+            ? SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
+                    SizedBox(height: 10),
+                    VideoProgressIndicator(_controller, allowScrubbing: true),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.refresh),
+                          onPressed: () {
+                            if (SharedData.videoFilePath != null) {
+                               _controller.pause();
+                               _controller.dispose();
+                               _controller = VideoPlayerController.file(File(SharedData.videoFilePath!))
+                              ..initialize().then((_) {
+                                setState(() {});
+                                _controller.play();
+                              });
+                            }
+                          },
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            : CircularProgressIndicator(),
+      ),
     );
   }
 }

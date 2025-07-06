@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
+import '../services/excel_parser.dart';
+import '../services/shared_data.dart';
+
 class UploadScreen extends StatefulWidget {
   @override
   _UploadScreenState createState() => _UploadScreenState();
@@ -13,17 +16,21 @@ class _UploadScreenState extends State<UploadScreen> {
   String status = "No files selected yet.";
 
   Future<void> pickExcelFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx'],
-    );
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['xlsx'],
+  );
 
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        excelFile = File(result.files.single.path!);
-        status = "Excel selected: ${result.files.single.name}";
-      });
-    }
+  if (result != null && result.files.single.path != null) {
+    final file = File(result.files.single.path!);
+    final parsed = await ExcelParser.parse(file);  
+    SharedData.parsedRoadData = parsed;           
+
+    setState(() {
+      excelFile = file;
+      status = "Excel selected: ${result.files.single.name}";
+    });
+  }
   }
 
   Future<void> pickVideoFile() async {
@@ -32,10 +39,13 @@ class _UploadScreenState extends State<UploadScreen> {
     );
 
     if (result != null && result.files.single.path != null) {
+      final path = result.files.single.path!;
       setState(() {
-        videoFile = File(result.files.single.path!);
+        videoFile = File(path);
         status = "Video selected: ${result.files.single.name}";
       });
+
+      SharedData.videoFilePath = path;
     }
   }
 
@@ -59,7 +69,13 @@ class _UploadScreenState extends State<UploadScreen> {
               label: Text("Upload Video (.mp4)"),
             ),
             SizedBox(height: 24),
-            Text(status, style: TextStyle(fontSize: 16)),
+            Text(
+              status,
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            if (excelFile != null) Text("Excel Uploaded: ${excelFile!.path.split('/').last}"),
+            if (videoFile != null) Text("Video Uploaded: ${videoFile!.path.split('/').last}"),
           ],
         ),
       ),
