@@ -1,11 +1,13 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../services/shared_data';
+import '../services/shared_data.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class VideoScreen extends StatefulWidget {
+  const VideoScreen({super.key});
+
   @override
-  _VideoScreenState createState() => _VideoScreenState();
+  State<VideoScreen> createState() => _VideoScreenState();
 }
 
 class _VideoScreenState extends State<VideoScreen> {
@@ -15,69 +17,61 @@ class _VideoScreenState extends State<VideoScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeVideo();
+  }
 
-    // Select video source: uploaded or fallback asset
-    if (SharedData.videoFilePath != null) {
-      _controller = VideoPlayerController.file(File(SharedData.videoFilePath!));
-    } else {
-      _controller = VideoPlayerController.asset('assets/videos/nsv_sample.mp4');
+  Future<void> _initializeVideo() async {
+    try {
+      if (kIsWeb) {
+        if (SharedData.instance.videoBytes != null) {
+          _controller = VideoPlayerController.asset('assets\videos\nsv_sample.mp4')
+            ..initialize().then((_) {
+              setState(() => _isInitialized = true);
+            });
+        }
+      } else {
+        if (SharedData.instance.videoFile != null) {
+          _controller = VideoPlayerController.file(SharedData.instance.videoFile!)
+            ..initialize().then((_) {
+              setState(() => _isInitialized = true);
+            });
+        }
+      }
+    } catch (e) {
+      debugPrint('Video initialization error: $e');
     }
+  }
 
-    _controller.initialize().then((_) {
-      setState(() {
-        _isInitialized = true;
-      });
-      _controller.play(); // Autoplay
-    });
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Road Video')),
+      body: Center(
+        child: _isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : const Text('No video available or still loading'),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _controller.value.isPlaying
+                ? _controller.pause()
+                : _controller.play();
+          });
+        },
+        child: Icon(
+          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("NSV Video Playback")),
-      body: Center(
-        child: _isInitialized
-            ? SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    ),
-                    SizedBox(height: 10),
-                    VideoProgressIndicator(_controller, allowScrubbing: true),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.refresh),
-                          onPressed: () {
-                            if (SharedData.videoFilePath != null) {
-                               _controller.pause();
-                               _controller.dispose();
-                               _controller = VideoPlayerController.file(File(SharedData.videoFilePath!))
-                              ..initialize().then((_) {
-                                setState(() {});
-                                _controller.play();
-                              });
-                            }
-                          },
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              )
-            : CircularProgressIndicator(),
-      ),
-    );
   }
 }
