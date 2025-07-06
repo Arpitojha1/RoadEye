@@ -1,81 +1,67 @@
+// lib/screens/upload_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-
 import '../services/excel_parser.dart';
 import '../services/shared_data.dart';
 
 class UploadScreen extends StatefulWidget {
+  const UploadScreen({super.key});
+
   @override
-  _UploadScreenState createState() => _UploadScreenState();
+  State<UploadScreen> createState() => _UploadScreenState();
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  File? excelFile;
-  File? videoFile;
-  String status = "No files selected yet.";
+  String _status = 'Select NSV Excel file';
+  bool _isLoading = false;
 
-  Future<void> pickExcelFile() async {
-  final result = await FilePicker.platform.pickFiles(
-    type: FileType.custom,
-    allowedExtensions: ['xlsx'],
-  );
-
-  if (result != null && result.files.single.path != null) {
-    final file = File(result.files.single.path!);
-    final parsed = await ExcelParser.parse(file);  
-    SharedData.parsedRoadData = parsed;           
-
+  Future<void> _processExcel() async {
     setState(() {
-      excelFile = file;
-      status = "Excel selected: ${result.files.single.name}";
+      _isLoading = true;
+      _status = 'Selecting file...';
     });
-  }
-  }
 
-  Future<void> pickVideoFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-    );
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx', 'xls'],
+      );
 
-    if (result != null && result.files.single.path != null) {
-      final path = result.files.single.path!;
-      setState(() {
-        videoFile = File(path);
-        status = "Video selected: ${result.files.single.name}";
-      });
-
-      SharedData.videoFilePath = path;
+      if (result != null && result.files.single.path != null) {
+        setState(() => _status = 'Processing data...');
+        final file = File(result.files.single.path!);
+        final data = await ExcelParser.parseExcel(file);
+        print('Parsed ${data.length} entries');
+        SharedData.instance.distressData = data;
+        
+        setState(() => _status = 'Processed ${data.length} road segments');
+      } else {
+        setState(() => _status = 'Selection cancelled');
+      }
+    } catch (e) {
+      setState(() => _status = 'Error: ${e.toString()}');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Upload NSV Data")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(title: const Text('Upload NSV Data')),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-              onPressed: pickExcelFile,
-              icon: Icon(Icons.upload_file),
-              label: Text("Upload Excel (.xlsx)"),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _processExcel,
+              child: const Text('Select Excel File'),
             ),
-            SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: pickVideoFile,
-              icon: Icon(Icons.video_file),
-              label: Text("Upload Video (.mp4)"),
-            ),
-            SizedBox(height: 24),
-            Text(
-              status,
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            if (excelFile != null) Text("Excel Uploaded: ${excelFile!.path.split('/').last}"),
-            if (videoFile != null) Text("Video Uploaded: ${videoFile!.path.split('/').last}"),
+            const SizedBox(height: 20),
+            if (_isLoading) const CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            Text(_status, style: const TextStyle(fontSize: 16)),
           ],
         ),
       ),

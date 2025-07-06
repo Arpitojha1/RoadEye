@@ -1,51 +1,52 @@
+// lib/screens/map_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-
-import '../services/dummy_loader.dart';
+import 'package:latlong2/latlong.dart' as latlong;
+import '../models/distress_data.dart';
+import '../services/shared_data.dart';
 import '../utils/severity_colors.dart';
 
-class MapScreen extends StatelessWidget {
+class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
+
+  @override
+  State<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
-    final data = DummyLoader.load();
-
-    // If no data is available, show a message instead of crashing
-    if (data.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Map View")),
-        body: Center(
-          child: Text(
-            "No distress data available.",
-            style: TextStyle(fontSize: 16, color: Colors.white70),
-          ),
-        ),
-      );
-    }
-
+    final distressData = SharedData.instance.distressData;
+    
     return Scaffold(
-      appBar: AppBar(title: const Text("Map View")),
       body: FlutterMap(
         options: MapOptions(
-          center: data[0].location, // Safe now because data is not empty
-          zoom: 14.0,
+          initialCenter: distressData.isNotEmpty 
+              ? latlong.LatLng(
+                  distressData.first.startLat,
+                  distressData.first.startLon,
+                )
+              : const latlong.LatLng(28.6139, 77.2090),
+          initialZoom: 13.0,
         ),
         children: [
           TileLayer(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c'],
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.example.app',
           ),
           MarkerLayer(
-            markers: data.map((d) => Marker(
-              width: 40.0,
-              height: 40.0,
-              point: d.location,
-              child: Icon(
-                Icons.circle,
-                color: getColorFromSeverity(d.severityScore),
-                size: 16, // Slightly larger for visibility
-              ),
-            )).toList(),
+            markers: distressData.map((data) {
+              return Marker(
+                point: latlong.LatLng(data.startLat, data.startLon),
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.location_on,
+                  color: SeverityCalculator.getSeverityColor(data.severity),
+                  size: 40,
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),

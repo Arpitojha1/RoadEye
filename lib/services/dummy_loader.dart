@@ -1,23 +1,33 @@
-import 'package:latlong2/latlong.dart';
 import '../models/distress_data.dart';
+import '../services/shared_data.dart';
 
 class DummyLoader {
-  static List<DistressData> load() {
+  static List<DistressData> loadDummyData() {
     return [
       DistressData(
-        roughness: 2000,
-        rutting: 4.5,
-        cracking: 0.3,
-        location: LatLng(26.3456, 76.2487),
-        severityScore: 0.75,
+        startLat: 28.6139,
+        startLon: 77.2090,
+        roughness: 1200,
+        rutting: 3.1,
+        cracking: 0.011,
+        ravelling: 0.006,
+        region: "plains",
+        severity: 0.568,
       ),
       DistressData(
+        startLat: 28.6145,
+        startLon: 77.2098,
         roughness: 1500,
-        rutting: 2.1,
-        cracking: 0.1,
-        location: LatLng(26.3461, 76.2492),
-        severityScore: 0.45,
+        rutting: 3.8,
+        cracking: 0.025,
+        ravelling: 0.012,
+        region: "plains",
+        severity: 0.724,
       ),
     ];
+  }
+
+  static void loadIntoSharedData() {
+    SharedData.instance.distressData = loadDummyData();
   }
 }

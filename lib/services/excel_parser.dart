@@ -1,34 +1,44 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
+import '../models/distress_data.dart';
+import '../utils/severity_colors.dart';
 
 class ExcelParser {
-  static Future<List<Map<String, dynamic>>> parse(File file) async {
-    final bytes = file.readAsBytesSync();
-    final excel = Excel.decodeBytes(bytes);
+  static Future<List<DistressData>> parseExcel(File file) async {
+    var bytes = file.readAsBytesSync();
+    var excel = Excel.decodeBytes(bytes);
+    var sheet = excel.tables[excel.tables.keys.first];
 
-    List<Map<String, dynamic>> results = [];
+    if (sheet == null) {
+      throw Exception("Excel sheet is empty");
+    }
 
-    for (final table in excel.tables.keys) {
-      final sheet = excel.tables[table];
-      if (sheet == null) continue;
+    List<DistressData> roadData = [];
 
-      for (int i = 1; i < sheet.rows.length; i++) {
-        final row = sheet.rows[i];
-
-        try {
-          results.add({
-            'latitude': row[0]?.value,   // adjust based on actual column index
-            'longitude': row[1]?.value,
-            'roughness': row[2]?.value,
-            'rutting': row[3]?.value,
-            'cracking': row[4]?.value,
-          });
-        } catch (e) {
-          print("Skipping bad row: $i");
-        }
+    for (var row in sheet.rows.skip(1)) { // Skip header
+      if (row.length >= 7) {
+        roadData.add(DistressData(
+          startLat: _parseDouble(row[0]?.value),
+          startLon: _parseDouble(row[1]?.value),
+          roughness: _parseDouble(row[2]?.value),
+          rutting: _parseDouble(row[3]?.value),
+          cracking: _parseDouble(row[4]?.value),
+          ravelling: _parseDouble(row[5]?.value),
+          region: row[6]?.value?.toString() ?? 'plains',
+          severity: SeverityCalculator.calculateSeverity(
+            roughness: _parseDouble(row[2]?.value),
+            rutting: _parseDouble(row[3]?.value),
+            cracking: _parseDouble(row[4]?.value),
+            ravelling: _parseDouble(row[5]?.value),
+          ),
+        ));
       }
     }
 
-    return results;
+    return roadData;
+  }
+
+  static double _parseDouble(dynamic value) {
+    return double.tryParse(value?.toString() ?? '0') ?? 0.0;
   }
 }

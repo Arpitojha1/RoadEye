@@ -1,4 +1,15 @@
+// services/shared_data.dart
+import '../models/distress_data.dart';
+
 class SharedData {
-  static List<Map<String, dynamic>>? parsedRoadData;
-  static String? videoFilePath;
+  static final SharedData _instance = SharedData._internal();
+  List<DistressData> distressData = [];
+
+  factory SharedData() {
+    return _instance;
+  }
+
+  SharedData._internal();
+
+  static SharedData get instance => _instance;
 }

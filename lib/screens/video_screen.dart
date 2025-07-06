@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../services/shared_data.dart';
+import '../services/shared_data';
 
 class VideoScreen extends StatefulWidget {
   @override
