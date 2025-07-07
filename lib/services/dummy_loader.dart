@@ -13,6 +13,7 @@ class DummyLoader {
         ravelling: 0.006,
         region: "plains",
         severity: 0.568,
+        lane: 'L1', // ✅ added
       ),
       DistressData(
         startLat: 28.6145,
@@ -23,6 +24,7 @@ class DummyLoader {
         ravelling: 0.012,
         region: "plains",
         severity: 0.724,
+        lane: 'L2', // ✅ added
       ),
     ];
   }

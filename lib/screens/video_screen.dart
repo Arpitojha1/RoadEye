@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../services/shared_data.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'dart:convert' show base64Encode;
 
 class VideoScreen extends StatefulWidget {
   const VideoScreen({super.key});
@@ -24,10 +25,11 @@ class _VideoScreenState extends State<VideoScreen> {
     try {
       if (kIsWeb) {
         if (SharedData.instance.videoBytes != null) {
-          _controller = VideoPlayerController.asset('assets\videos\nsv_sample.mp4')
-            ..initialize().then((_) {
-              setState(() => _isInitialized = true);
-            });
+          _controller = VideoPlayerController.network(
+            'data:video/mp4;base64,${base64Encode(SharedData.instance.videoBytes!)}'
+          )..initialize().then((_) {
+            setState(() => _isInitialized = true);
+          });
         }
       } else {
         if (SharedData.instance.videoFile != null) {

@@ -18,7 +18,7 @@ dependencies:
   latlong2: ^0.9.0          # Handles latitude/longitude types
 
   # 🎥 Video support
-  video_player: ^2.7.0      # For video playback
+  video_player: ^2.8.0      # For video playback
 
   # 📄 File/data handling
   csv: ^5.0.0               # To read .csv files if needed
@@ -35,6 +35,8 @@ dependencies:
 
   # 🧱 iOS-style icons
   cupertino_icons: ^1.0.8   # For Cupertino (iOS-style) icons
+
+  video_player_web: ^2.0.16 # Required for web video support
 
 dev_dependencies:
   flutter_test:

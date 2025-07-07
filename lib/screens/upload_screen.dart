@@ -1,7 +1,9 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:latlong2/latlong.dart';
+
 import '../services/excel_parser.dart';
 import '../services/shared_data.dart';
 
@@ -30,19 +32,23 @@ class _UploadScreenState extends State<UploadScreen> {
 
       if (result != null) {
         setState(() => _status = 'Processing data...');
-        
-        // Web-compatible file handling
+
         final fileBytes = result.files.single.bytes;
-        final fileName = result.files.single.name;
-        
         if (fileBytes != null) {
-          final data = await ExcelParser.parseExcelBytes(fileBytes, fileName);
-          SharedData.instance.distressData = data;
-          setState(() => _status = 'Processed ${data.length} road segments');
+          final coordinates = await ExcelParser.parseExcelBytes(fileBytes);
+          SharedData.instance.coordinates = coordinates;
+
+          setState(() {
+            _status = '✅ Processed ${coordinates.length} coordinate points';
+          });
+        } else {
+          setState(() => _status = '❌ File read failed');
         }
+      } else {
+        setState(() => _status = '❌ File selection cancelled');
       }
     } catch (e) {
-      setState(() => _status = 'Error: ${e.toString()}');
+      setState(() => _status = '❌ Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -60,16 +66,18 @@ class _UploadScreenState extends State<UploadScreen> {
       );
 
       if (result != null) {
-        // Web-compatible video handling
         if (kIsWeb) {
           SharedData.instance.videoBytes = result.files.single.bytes;
         } else {
           SharedData.instance.videoFile = File(result.files.single.path!);
         }
-        setState(() => _status = 'Video file ready');
+
+        setState(() => _status = '🎥 Video file ready');
+      } else {
+        setState(() => _status = '❌ Video selection cancelled');
       }
     } catch (e) {
-      setState(() => _status = 'Error: ${e.toString()}');
+      setState(() => _status = '❌ Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -95,7 +103,11 @@ class _UploadScreenState extends State<UploadScreen> {
             const SizedBox(height: 20),
             if (_isLoading) const CircularProgressIndicator(),
             const SizedBox(height: 20),
-            Text(_status, style: const TextStyle(fontSize: 16)),
+            Text(
+              _status,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
+            ),
           ],
         ),
       ),
