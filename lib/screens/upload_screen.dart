@@ -1,8 +1,7 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:latlong2/latlong.dart';
 
 import '../services/excel_parser.dart';
 import '../services/shared_data.dart';
@@ -15,7 +14,7 @@ class UploadScreen extends StatefulWidget {
 }
 
 class _UploadScreenState extends State<UploadScreen> {
-  String _status = 'Select a file';
+  String _status = 'Select NSV Excel file';
   bool _isLoading = false;
 
   Future<void> _processExcel() async {
@@ -30,25 +29,21 @@ class _UploadScreenState extends State<UploadScreen> {
         allowedExtensions: ['xlsx', 'xls'],
       );
 
-      if (result != null) {
-        setState(() => _status = 'Processing data...');
+      if (result != null && result.files.isNotEmpty) {
+        final fileBytes = result.files.first.bytes;
+        final fileName = result.files.first.name;
 
-        final fileBytes = result.files.single.bytes;
         if (fileBytes != null) {
-          final coordinates = await ExcelParser.parseExcelBytes(fileBytes);
-          SharedData.instance.coordinates = coordinates;
-
-          setState(() {
-            _status = 'Processed ${coordinates.length} coordinate points';
-          });
-        } else {
-          setState(() => _status = 'File read failed');
+          setState(() => _status = 'Processing data...');
+          final data = await ExcelParser.parseExcelBytes(fileBytes, fileName);
+          SharedData.instance.distressData = data;
+          setState(() => _status = '✅ Processed ${data.length} road segments');
         }
       } else {
-        setState(() => _status = 'File selection cancelled');
+        setState(() => _status = '❌ File selection cancelled');
       }
     } catch (e) {
-      setState(() => _status = 'Error: ${e.toString()}');
+      setState(() => _status = '❌ Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -61,23 +56,20 @@ class _UploadScreenState extends State<UploadScreen> {
     });
 
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.video,
-      );
+      final result = await FilePicker.platform.pickFiles(type: FileType.video);
 
-      if (result != null) {
+      if (result != null && result.files.isNotEmpty) {
         if (kIsWeb) {
-          SharedData.instance.videoBytes = result.files.single.bytes;
+          SharedData.instance.videoBytes = result.files.first.bytes;
         } else {
-          SharedData.instance.videoFile = File(result.files.single.path!);
+          SharedData.instance.videoFile = File(result.files.first.path!);
         }
-
-        setState(() => _status = 'Video file ready');
+        setState(() => _status = '🎥 Video file ready');
       } else {
-        setState(() => _status = 'Video selection cancelled');
+        setState(() => _status = '❌ Video selection cancelled');
       }
     } catch (e) {
-      setState(() => _status = 'Error: ${e.toString()}');
+      setState(() => _status = '❌ Error: ${e.toString()}');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -86,19 +78,19 @@ class _UploadScreenState extends State<UploadScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Upload Data')),
+      appBar: AppBar(title: const Text('Upload NSV Data')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
               onPressed: _isLoading ? null : _processExcel,
-              child: const Text('Upload Excel File'),
+              child: const Text('📊 Upload Excel File'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _isLoading ? null : _processVideo,
-              child: const Text('Upload Video File'),
+              child: const Text('🎥 Upload Video File'),
             ),
             const SizedBox(height: 20),
             if (_isLoading) const CircularProgressIndicator(),

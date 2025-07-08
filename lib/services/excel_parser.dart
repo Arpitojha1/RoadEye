@@ -1,57 +1,111 @@
-import 'package:latlong2/latlong.dart';
 import 'package:excel/excel.dart';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import '../models/distress_data.dart';
+import '../utils/severity_colors.dart';
 
 class ExcelParser {
-  static List<LatLng> extractAllLaneCoordinates(Excel excel) {
-    List<LatLng> coordinates = [];
+  static Future<List<DistressData>> parseExcelBytes(
+    Uint8List bytes,
+    String fileName,
+  ) async {
+    try {
+      final excel = Excel.decodeBytes(bytes);
+      final sheet = excel.tables[' Comparison with CA@100m'] ?? 
+                   excel.tables.values.first;
 
-    var sheet = excel.tables['Comparison with CA@100m'];
-    if (sheet == null) return coordinates;
+      List<DistressData> data = [];
 
-    final laneColumns = {
-      'L1': [5, 6, 8, 9],
-      'L2': [11, 12, 14, 15],
-      'L3': [17, 18, 20, 21],
-      'L4': [23, 24, 26, 27],
-      'R1': [29, 30, 32, 33],
-      'R2': [35, 36, 38, 39],
-    };
-
-    for (var rowIndex = 3; rowIndex < sheet.rows.length; rowIndex++) {
-      var row = sheet.rows[rowIndex];
-      for (var lane in laneColumns.entries) {
+      for (var i = 3; i < sheet.rows.length; i++) {
         try {
-          double startLat = _safeParse(row[lane.value[0]]);
-          double startLng = _safeParse(row[lane.value[1]]);
-          double endLat = _safeParse(row[lane.value[2]]);
-          double endLng = _safeParse(row[lane.value[3]]);
+          final row = sheet.rows[i];
+          if (row.length < 67) continue;
 
-          if (startLat != 0 && startLng != 0) {
-            coordinates.add(LatLng(startLat, startLng));
+          // Skip if coordinates are invalid (blank, text, or invalid numbers)
+          final lat = _tryParseCoordinate(row[5]);
+          final lon = _tryParseCoordinate(row[6]);
+          if (lat == null || lon == null) {
+            debugPrint('Skipping row $i - Invalid coordinates');
+            continue;
           }
-          if (endLat != 0 && endLng != 0) {
-            coordinates.add(LatLng(endLat, endLng));
+
+          // Skip if coordinates are outside India
+          if (!_isValidIndianCoordinate(lat, lon)) {
+            debugPrint('Skipping row $i - Coordinates outside India: ($lat, $lon)');
+            continue;
           }
+
+          data.add(DistressData(
+            lane: 'L1',
+            startLat: lat,
+            startLon: lon,
+            roughness: _safeParse(row[43]),
+            rutting: _safeParse(row[45]),
+            cracking: _parsePercentage(row[54]),
+            ravelling: _parsePercentage(row[66]),
+            region: "plains",
+            severity: SeverityCalculator.calculateSeverity(
+              roughness: _safeParse(row[43]),
+              rutting: _safeParse(row[45]),
+              cracking: _parsePercentage(row[54]),
+              ravelling: _parsePercentage(row[66]),
+            ),
+          ));
         } catch (e) {
-          print('⚠️ Error parsing ${lane.key} at row $rowIndex: $e');
+          debugPrint('Error parsing row $i: $e');
         }
       }
+      return data;
+    } catch (e) {
+      throw Exception('Excel parsing failed: ${e.toString()}');
     }
+  }
 
-    return coordinates;
+  /// Returns null for invalid coordinates (blank, text, or non-Indian numbers)
+  static double? _tryParseCoordinate(Data? cell) {
+    try {
+      // Skip empty cells
+      if (cell == null || cell.value == null) return null;
+      
+      // Handle numeric values directly
+      if (cell.value is num) {
+        return (cell.value as num).toDouble();
+      }
+
+      // Parse string values
+      final strValue = cell.value.toString().trim();
+      if (strValue.isEmpty) return null;
+
+      // Skip text values (contains letters)
+      if (RegExp(r'[a-zA-Z]').hasMatch(strValue)) return null;
+
+      final value = double.tryParse(strValue);
+      return value;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool _isValidIndianCoordinate(double lat, double lon) {
+    return lat >= 8.0 && lat <= 37.0 && // India latitude range
+           lon >= 68.0 && lon <= 97.0;  // India longitude range
+  }
+
+  static double _parsePercentage(Data? cell) {
+    try {
+      String value = cell?.value.toString().trim() ?? '0';
+      value = value.replaceAll('%', '');
+      return double.parse(value) / 100;
+    } catch (_) {
+      return 0.0;
+    }
   }
 
   static double _safeParse(Data? cell) {
-    return double.tryParse(cell?.value.toString().trim() ?? '') ?? 0.0;
-  }
-
-  static Future<List<LatLng>> parseExcelBytes(Uint8List bytes) async {
     try {
-      final excel = Excel.decodeBytes(bytes);
-      return extractAllLaneCoordinates(excel);
-    } catch (e) {
-      throw Exception('Error parsing Excel: $e');
+      return double.parse(cell?.value.toString().trim() ?? '0');
+    } catch (_) {
+      return 0.0;
     }
   }
 }
