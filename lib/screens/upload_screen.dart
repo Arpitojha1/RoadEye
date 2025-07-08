@@ -50,30 +50,36 @@ class _UploadScreenState extends State<UploadScreen> {
   }
 
   Future<void> _processVideo() async {
-    setState(() {
-      _isLoading = true;
-      _status = 'Selecting video file...';
-    });
+  setState(() {
+    _isLoading = true;
+    _status = 'Selecting video file...';
+  });
 
-    try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.video);
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+      withData: false, // 🚫 prevent loading full video into memory
+    );
 
-      if (result != null && result.files.isNotEmpty) {
-        if (kIsWeb) {
-          SharedData.instance.videoBytes = result.files.first.bytes;
-        } else {
-          SharedData.instance.videoFile = File(result.files.first.path!);
-        }
-        setState(() => _status = '🎥 Video file ready');
+    if (result != null && result.files.isNotEmpty) {
+      final path = result.files.first.path;
+
+      if (path != null) {
+        SharedData.instance.videoFile = File(path);  // ✅ Just store reference
+        setState(() => _status = '🎥 Large video file selected');
       } else {
-        setState(() => _status = '❌ Video selection cancelled');
+        setState(() => _status = '❌ Could not read file path');
       }
-    } catch (e) {
-      setState(() => _status = '❌ Error: ${e.toString()}');
-    } finally {
-      setState(() => _isLoading = false);
+    } else {
+      setState(() => _status = '❌ Video selection cancelled');
     }
+  } catch (e) {
+    setState(() => _status = '❌ Error: ${e.toString()}');
+  } finally {
+    setState(() => _isLoading = false);
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
