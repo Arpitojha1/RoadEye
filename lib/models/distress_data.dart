@@ -33,15 +33,17 @@ class DistressData {
         'lane': lane,
       };
 
-  factory DistressData.fromJson(Map<String, dynamic> json) => DistressData(
-        startLat: json['startLat']?.toDouble() ?? 0.0,
-        startLon: json['startLon']?.toDouble() ?? 0.0,
-        roughness: json['roughness']?.toDouble() ?? 0.0,
-        rutting: json['rutting']?.toDouble() ?? 0.0,
-        cracking: json['cracking']?.toDouble() ?? 0.0,
-        ravelling: json['ravelling']?.toDouble() ?? 0.0,
-        region: json['region'] ?? 'plains',
-        severity: json['severity']?.toDouble() ?? 0.0,
-        lane: json['lane'] ?? 'L1',
-      );
+  factory DistressData.fromJson(Map<String, dynamic> json) {
+  return DistressData(
+    lane: json['lane'],
+    startLat: json['startLat'],
+    startLon: json['startLon'],
+    roughness: json['roughness'],
+    rutting: json['rutting'],
+    cracking: json['cracking'],
+    ravelling: json['ravelling'],
+    region: json['region'],
+    severity: json['severity'],
+  );
+}
 }
