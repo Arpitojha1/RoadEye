@@ -8,6 +8,5 @@ Future<void> loadNSVData() async {
   final sheet = excel.tables[excel.tables.keys.first];
   for (var row in sheet!.rows.skip(1)) {
     print(row.map((cell) => cell?.value));
-    // TODO: Parse into model like DistressData
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -71,23 +70,28 @@ class _UploadScreenState extends State<UploadScreen> {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.video,
-        withData: false,
+        withData: kIsWeb, // ✅ Load bytes only on web
       );
 
       if (result != null && result.files.isNotEmpty) {
-        final path = result.files.first.path;
+        final file = result.files.first;
 
-        if (path != null) {
-          SharedData.instance.videoFile = File(path);
-          setState(() => _status = '🎥 Video selected: ${path.split('/').last}');
+        if (kIsWeb) {
+          SharedData.instance.videoBytes = file.bytes;
+          setState(() => _status = '🎥 Video uploaded (web): ${file.name}');
         } else {
-          setState(() => _status = '❌ Could not read video file path.');
+          if (file.path != null) {
+            SharedData.instance.videoFile = File(file.path!);
+            setState(() => _status = '🎥 Video selected: ${file.name}');
+          } else {
+            setState(() => _status = '❌ Could not read video file path.');
+          }
         }
       } else {
         setState(() => _status = '❌ Video selection cancelled');
       }
     } catch (e) {
-      setState(() => _status = '❌ Error: ${e.toString()}');
+      setState(() => _status = '❌ Error loading video: $e');
     } finally {
       setState(() => _isLoading = false);
     }
