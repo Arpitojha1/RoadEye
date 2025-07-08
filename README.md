@@ -1,16 +1,28 @@
-# roadeye
 
-A new Flutter project.
+🌐🚗 RoadEye Smart Highway Infrastructure Visualizer
 
-## Getting Started
+RoadEye is an offline-capable road infrastructure visualization tool designed to simplify national highway data inspection. It enables smart integration of chainage, GPS coordinates, and structure metadata (e.g., culverts, bridges, SVUPs, VUPs).
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## ✨ Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+🔹 Upload and parse Excel files with structure data  
+🔹 Chainage mapping with timestamps  
+🔹 Offline-first: Tailwind and all assets work without internet  
+🔹 Clean and responsive UI (mobile-friendly)  
+🔹 Supports culverts, VUPs, SVUPs, bridges, and more  
+🔹 Planned support for real-time GPS overlays
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 👨‍💻 Contributors
+👤 [Siddhee Mhatre](https://github.com/Sid-bit-08)
+👤 [Arpit Ojha](https://github.com/Arpitojha1)  
+👤[Ishanya Tripathi](https://github.com/ishanyatripathi)
+
+---
+
+## ⚖️ License
+
+📄 MIT License free to use, modify, and share.
