@@ -132,9 +132,9 @@ While RoadEye is currently an offline-first prototype, it is designed with a fut
 
 ## Contributors
 
-- [Siddhee Mhatre](https://github.com/Sid-bit-08) — 
-- [Arpit Ojha](https://github.com/Arpitojha1) — 
-- [Ishanya Tripathi](https://github.com/ishanyatripathi) — 
+- [Siddhee Mhatre](https://github.com/Sid-bit-08) — Presentation, Design logic
+- [Arpit Ojha](https://github.com/Arpitojha1) — Flutter Frontend, Map Interface, Severity calculation,Backend
+- [Ishanya Tripathi](https://github.com/ishanyatripathi) — Excel processing logic, Python – JSON file parsing,Documentation – README
 
 ---
 
