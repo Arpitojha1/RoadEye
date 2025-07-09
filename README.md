@@ -39,7 +39,7 @@ It supports **structured Excel parsing**, **chainage-to-GPS mapping**, and a sle
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```
 screens/
@@ -75,7 +75,7 @@ Video Screen :-
 
 ---
 ### How to run remotely 
-## 📦 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
