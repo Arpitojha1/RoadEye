@@ -39,19 +39,26 @@ It supports **structured Excel parsing**, **chainage-to-GPS mapping**, and a sle
 
 ---
 
-## Folder Structure (lib/)
+## 📁 Directory Structure
+
+```
 screens/
-├── dashboard_screen.dart
-├── map_screen.dart
-├── video_player_screen.dart # WIP
+├── dashboard_screen.dart         # Dashboard UI
+├── map_screen.dart              # Map view for distress locations
+├── video_player_screen.dart     # WIP: Video playback for road footage
+
 widgets/
-├── severity_tile.dart
+├── severity_tile.dart           # Widget for displaying severity levels
+
 services/
-├── shared_data.dart
+├── shared_data.dart             # Manages shared state/data between components
+
 models/
-├── distress_data.dart
+├── distress_data.dart           # Data model for road distress entries
+
 utils/
-├── severity_colors.dart
+├── severity_colors.dart         # Maps severity levels to specific colors
+```
 
 ## Screenshots
 
