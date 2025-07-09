@@ -74,9 +74,34 @@ Video Screen :-
 ![image](https://github.com/user-attachments/assets/e6d54179-0da2-4d41-b042-c722c4d63551)
 
 ---
-## How to run remotely 
+### How to run remotely 
+## 📦 Prerequisites
 
+Before you begin, ensure you have the following installed:
 
+- [Flutter SDK](https://flutter.dev/docs/get-started/install)
+- [Android Studio](https://developer.android.com/studio) or [Visual Studio Code](https://code.visualstudio.com/)
+- Android/iOS emulator or a physical device
+- Git
+
+To check if Flutter is correctly installed, run:
+flutter doctor in terminal
+
+## Clone the Repository
+Write the following in your terminal
+
+git clone https://github.com/Arpitojha1/RoadEye.git
+
+cd RoadEye
+
+## Set Up the Project
+Run the following to fetch all the dependencies:
+
+write "flutter pub get" in your terminal
+
+## Run the app
+
+write "flutter run" in your terminal
 
 ## Remote Monitoring (Online Support)
 
