@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8   # For Cupertino (iOS-style) icons
 
   video_player_web: ^2.0.16 # Required for web video support
+  flutter_map_marker_popup: 6.1.2
 
 dev_dependencies:
   flutter_test:
